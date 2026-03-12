@@ -1,138 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IGCSE NEON SYSTEM 2026</title>
-    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>IGCSE Pastpaper Tracker 2026</title>
+    <link href='https://fonts.googleapis.com' rel='stylesheet'>
     <style>
-        :root { --neon: #00f2ff; --bg: #050505; --card: #111; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 0; min-height: 100vh; border: 5px solid var(--neon); box-sizing: border-box; box-shadow: inset 0 0 20px var(--neon); display: flex; flex-direction: column; }
-        header { padding: 25px; text-align: center; background: #000; border-bottom: 2px solid #333; position: sticky; top:0; z-index:100; }
-        h1 { font-family: 'Orbitron', sans-serif; margin: 0; text-shadow: 0 0 10px var(--neon); font-size: 1.5rem; letter-spacing: 2px; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; width: 100%; box-sizing: border-box; flex: 1; }
+        :root { 
+            --bg: #fdfdfd; --card: #ffffff; --text: #333; --border: #e9ecef;
+            --math: #d1ecf1; --phys: #fff3cd; --chem: #d4edda; --bio: #f8d7da;
+            --current: #f8f9fa;
+        }
+        body.dark-mode { 
+            --bg: #121212; --card: #1e1e1e; --text: #f8f9fa; --border: #333;
+            --math: #0c5460; --phys: #856404; --chem: #155724; --bio: #721c24;
+            --current: #121212;
+        }
+        body { 
+            font-family: 'Quicksand', sans-serif; background: var(--bg); color: var(--text); 
+            margin: 0; padding: 0; min-height: 100vh; transition: 0.4s; display: flex; flex-direction: column;
+        }
+        header { 
+            padding: 20px 40px; background: var(--card); border-bottom: 4px solid var(--current);
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000;
+        }
+        .mode-toggle { background: var(--bg); border: 2px solid var(--border); padding: 10px 15px; border-radius: 50px; cursor: pointer; font-size: 1.2rem; transition: 0.3s; color: var(--text); }
         
-        /* Dashboard UI */
-        .search-area { text-align: center; margin-bottom: 30px; }
-        #mainSearch { width: 100%; max-width: 500px; padding: 15px; background: #111; border: 1px solid #444; border-radius: 30px; color: #fff; font-family: 'Orbitron', sans-serif; text-align: center; font-size: 0.9rem; outline: none; transition: 0.3s; }
-        #mainSearch:focus { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); }
-        
-        #dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        .sub-card { background: var(--card); border: 2px solid #333; border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; transition: 0.3s; }
-        .sub-card:hover { border-color: var(--neon); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0, 242, 255, 0.2); }
-        .sub-card.selected { border-color: #39ff14; box-shadow: 0 0 15px #39ff14; }
-        .sub-card h3 { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; margin: 10px 0; color: #fff; }
-        .sub-card p { font-size: 0.75rem; color: #666; font-weight: bold; margin: 0; letter-spacing: 1px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; width: 100%; box-sizing: border-box; flex: 1; }
+        .search-area { text-align: center; margin-bottom: 40px; }
+        #mainSearch { width: 100%; max-width: 600px; padding: 20px; border: 3px solid var(--border); border-radius: 50px; background: var(--card); color: var(--text); font-family: 'Quicksand'; font-weight: 700; font-size: 1rem; outline: none; }
 
-        /* Tracker UI */
+        /* Bolder Grid */
+        #dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
+        .sub-card { 
+            background: var(--card); border: 5px solid var(--border); border-radius: 25px; 
+            padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 12px 0 var(--border);
+        }
+        .sub-card:hover { transform: translateY(-5px); border-color: #aaa; }
+        .sub-card.selected { border-color: #28a745; box-shadow: 0 12px 0 #28a745; }
+        .sub-card h3 { font-weight: 700; margin: 10px 0; font-size: 1.4rem; }
+
+        /* Tracker View UI */
         #trackerView { display: none; }
-        .tab-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid #222; }
-        .tab-item { padding: 12px 24px; background: #111; border: 1px solid #333; color: #fff; border-radius: 5px; cursor: pointer; font-family: 'Orbitron'; font-size: 0.7rem; white-space: nowrap; transition: 0.3s; }
-        .tab-item.active { border-color: var(--neon); box-shadow: 0 0 10px var(--neon); color: var(--neon); }
+        .tab-bar { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; border-bottom: 1px solid #222; margin-bottom: 25px; }
+        .tab-item { padding: 12px 25px; background: var(--card); border: 2px solid var(--border); border-radius: 50px; cursor: pointer; font-weight: 700; white-space: nowrap; }
+        .tab-item.active { background: var(--current); border-color: var(--text); }
+
+        .card { background: var(--card); border-radius: 25px; padding: 25px; border: 1px solid var(--border); overflow-x: auto; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        td { padding: 15px; background: rgba(0,0,0,0.03); border-radius: 15px; text-align: center; font-weight: 700; }
         
-        .card { background: #111; border-radius: 15px; padding: 15px; border: 1px solid #333; overflow-x: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        table { width: 100%; border-collapse: separate; border-spacing: 0 5px; }
-        th { font-family: 'Orbitron'; color: #666; font-size: 0.65rem; padding: 12px; text-transform: uppercase; }
-        td { background: #0a0a0a; padding: 10px; text-align: center; border-top: 1px solid #222; border-bottom: 1px solid #222; font-size: 0.85rem; }
-        .year-cell { font-family: 'Orbitron'; background: #1a1a1a !important; font-weight: bold; }
-        .mark-box { background: transparent; border: 1px solid #333; color: var(--neon); width: 45px; text-align: center; font-size: 11px; padding: 5px; border-radius: 4px; font-family: 'Orbitron'; outline: none; }
+        .mark-box { 
+            background: var(--card); border: 2px solid var(--border); color: var(--text); 
+            width: 60px; text-align: center; padding: 8px; border-radius: 12px; font-weight: 800; font-family: 'Inter'; outline: none;
+        }
 
-        /* Navigation Buttons */
-        .nav-btn { position: fixed; bottom: 30px; right: 30px; background: var(--neon); color: #000; padding: 18px 30px; border-radius: 40px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border: none; box-shadow: 0 0 25px var(--neon); z-index: 1000; display: none; }
-        .back-btn { position: fixed; bottom: 30px; left: 30px; background: #222; color: #fff; padding: 12px 25px; border-radius: 40px; cursor: pointer; border: 1px solid #444; font-family: 'Orbitron'; display: none; z-index: 1000; }
-
-        /* Mistakes Drawer */
-        #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; z-index:1500; backdrop-filter: blur(4px); }
-        #drawer { position: fixed; right: -450px; top: 0; width: 380px; height: 100%; background: #000; border-left: 4px solid var(--neon); padding: 40px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000; overflow-y: auto; box-sizing: border-box; }
+        .nav-btn { position: fixed; bottom: 30px; right: 30px; background: #333; color: #fff; padding: 22px 45px; border-radius: 60px; font-weight: 700; cursor: pointer; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.3); z-index: 1001; }
+        .back-btn { position: fixed; bottom: 30px; left: 30px; background: #eee; color: #333; padding: 15px 30px; border-radius: 50px; cursor: pointer; border: 1px solid #ddd; font-weight: 700; z-index: 1001; }
+        
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1500; }
+        #drawer { position: fixed; right: -450px; top: 0; width: 400px; height: 100%; background: var(--card); border-left: 10px solid var(--current); padding: 40px; transition: 0.4s; z-index: 2000; overflow-y: auto; box-sizing: border-box; }
         #drawer.open { right: 0; }
-        textarea { width: 100%; height: 200px; background: #111; color: #fff; border: 1px solid #333; padding: 15px; margin-top: 15px; border-radius: 8px; resize: none; outline: none; font-family: 'Inter'; line-height: 1.5; }
-        .save-btn { width: 100%; padding: 18px; background: #fff; color: #000; font-family: 'Orbitron'; font-weight: bold; border: none; cursor: pointer; margin-top: 25px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        textarea { width: 100%; height: 200px; background: var(--bg); border: 2px solid var(--border); color: var(--text); padding: 15px; border-radius: 15px; font-family: inherit; }
+        .save-btn { width: 100%; padding: 18px; background: #333; color: #fff; font-weight: 700; border: none; border-radius: 15px; cursor: pointer; margin-top: 20px; }
+        footer { padding: 40px; text-align: center; opacity: 0.5; font-weight: 700; }
     </style>
 </head>
 <body>
-    <header><h1>IGCSE SYSTEM 2026</h1></header>
 
-    <div class="container" id="homeView">
-        <div class="search-area">
-            <input type="text" id="mainSearch" placeholder="SEARCH SUBJECT OR CODE (e.g. 0580)" onkeyup="filterGrid()">
-        </div>
-        <div id="dashboard"></div>
+<header>
+    <div style="width: 80px;"></div>
+    <h1 id="title">IGCSE TRACKER 2026</h1>
+    <button class="mode-toggle" onclick="toggleTheme()" id="themeBtn">🌙 DARK</button>
+</header>
+
+<div class="container" id="homeView">
+    <div class="search-area"><input type="text" id="mainSearch" placeholder="SEARCH (CODE OR NAME)" onkeyup="filterGrid()"></div>
+    <div id="dashboard"></div>
+</div>
+
+<div class="container" id="trackerView">
+    <div class="tab-bar" id="trackerTabs"></div>
+    <div class="card"><table><thead><tr id="hRow"></tr></thead><tbody id="tBody"></tbody></table></div>
+</div>
+
+<button class="nav-btn" id="startBtn" onclick="launchTracker()" style="display:none;">START TRACKING (0)</button>
+<button class="back-btn" id="backBtn" onclick="location.reload()" style="display:none;">← DASHBOARD</button>
+
+<div id="overlay" onclick="closeDrawer()"></div>
+<div id="drawer">
+    <h2 id="dHead" style="font-weight:800;">MISTAKE LOG</h2>
+    <textarea id="nArea" placeholder="Enter notes..."></textarea>
+    <div style="margin-top:20px;">
+        <input type="file" id="fIn" accept="image/*,application/pdf" style="margin-bottom:10px;">
+        <div id="fPrev" style="width:100%; border-radius:10px; overflow:hidden;"></div>
     </div>
+    <button class="save-btn" onclick="saveData()">SAVE_DATA</button>
+</div>
 
-    <div class="container" id="trackerView">
-        <div class="tab-bar" id="trackerTabs"></div>
-        <div class="card">
-            <table>
-                <thead><tr id="hRow"></tr></thead>
-                <tbody id="tBody"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <button class="nav-btn" id="startBtn" onclick="launchTracker()">START TRACKING (0)</button>
-    <button class="back-btn" id="backBtn" onclick="location.reload()">← DASHBOARD</button>
-
-    <div id="overlay" onclick="closeDrawer()"></div>
-    <div id="drawer">
-        <h2 id="dHead" style="font-family:Orbitron; font-size:1.1rem; margin:0; color:var(--neon);">LOG_ERROR</h2>
-        <textarea id="nArea" placeholder="Enter mistake details here..."></textarea>
-        <button class="save-btn" onclick="saveData()">SAVE PROGRESS</button>
-    </div>
+<footer>MADE BY ROLLEDJAM &copy; 2026</footer>
 
 <script>
-    // FIXED SUBJECT LIST - No missing arrays
     const subjects = [
-        { n: "Mathematics", c: "0580", p: [2, 4], m: (y) => y >= 2025 ? {2:100, 4:100} : {2:70, 4:130} },
-        { n: "Physics", c: "0625", p: [2, 4, 6], m: (y) => ({2:40, 4:80, 6:40}) },
-        { n: "Chemistry", c: "0620", p: [2, 4, 6], m: (y) => ({2:40, 4:80, 6:40}) },
-        { n: "Biology", c: "0610", p: [2, 4, 6], m: (y) => ({2:40, 4:80, 6:40}) },
-        { n: "Computer Science", c: "0478", p: [1, 2], m: (y) => ({1:75, 2:75}) },
-        { n: "Economics", c: "0455", p: [1, 2], m: (y) => ({1:30, 2:90}) },
-        { n: "Accounting", c: "0452", p: [1, 2], m: (y) => ({1:35, 2:100}) },
-        { n: "Business Studies", c: "0450", p: [1, 2], m: (y) => ({1:80, 2:80}) },
-        { n: "ICT", c: "0417", p: [1, 2, 3], m: (y) => ({1:80, 2:70, 3:70}) },
-        { n: "English - First Lang", c: "0500", p: [1, 2], m: (y) => ({1:80, 2:80}) },
-        { n: "English Literature", c: "0475", p: [1, 2], m: (y) => ({1:50, 2:50}) },
-        { n: "Environmental Mgmt", c: "0680", p: [1, 2], m: (y) => ({1:80, 2:80}) },
-        { n: "Additional Maths", c: "0606", p: [1, 2], m: (y) => ({1:80, 2:80}) },
-        { n: "Coordinated Sciences", c: "0654", p: [2, 4, 6], m: (y) => ({2:40, 4:120, 6:60}) }
+        { n: "Mathematics", c: "0580", p: [2, 4], m: (y) => y >= 2025 ? {2:100, 4:100} : {2:70, 4:130}, color: "var(--math)" },
+        { n: "Physics", c: "0625", p: [2, 4, 6], m: (y) => ({2:40, 4:80, 6:40}), color: "var(--phys)" },
+        { n: "Chemistry", c: "0620", p: [2, 4, 6], m: (y) => ({2:40, 4:80, 6:40}), color: "var(--chem)" },
+        { n: "Biology", c: "0610", p: [2, 4, 6], m: (y) => ({2:40, 4:80, 6:40}), color: "var(--bio)" },
+        { n: "Additional Mathematics", c: "0606", p: [1, 2], m: (y) => ({1:80, 2:80}), color: "var(--math)" },
+        { n: "Computer Science", c: "0478", p: [1, 2], m: (y) => ({1:75, 2:75}), color: "var(--phys)" },
+        { n: "Environmental Management", c: "0680", p: [1, 2], m: (y) => ({1:80, 2:80}), color: "var(--chem)" },
+        { n: "Coordinated Sciences", c: "0654", p: [2, 4, 6], m: (y) => ({2:40, 4:120, 6:60}), color: "var(--bio)" },
+        { n: "Business Studies", c: "0450", p: [1, 2], m: (y) => y >= 2020 ? {1:80, 2:80} : {1:100, 2:100}, color: "var(--math)" },
+        { n: "Economics", c: "0455", p: [1, 2], m: (y) => ({1:30, 2:90}), color: "var(--phys)" }
     ];
 
-    let selectedIndices = [];
-    let activeSubIdx = -1;
-    let activePaperID = '';
+    let selectedIdx = [], activeIdx = -1, activePaperID = '', curFile = '';
 
-    function initDashboard() {
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('themeBtn');
+        if (body.classList.contains('dark-mode')) {
+            body.classList.remove('dark-mode');
+            btn.innerText = "🌙 DARK";
+        } else {
+            body.classList.add('dark-mode');
+            btn.innerText = "☀️ LIGHT";
+        }
+    }
+
+    function init() {
         const grid = document.getElementById('dashboard');
         grid.innerHTML = '';
         subjects.forEach((s, i) => {
             const card = document.createElement('div');
             card.className = 'sub-card';
-            card.innerHTML = `<p>${s.c}</p><h3>${s.n}</h3>`;
-            card.onclick = () => toggleSelect(i, card);
+            card.innerHTML = `<p style="font-weight:800; opacity:0.5;">${s.c}</p><h3>${s.n}</h3>`;
+            card.onclick = () => {
+                if(selectedIdx.includes(i)) {
+                    selectedIdx = selectedIdx.filter(x => x !== i);
+                    card.classList.remove('selected');
+                } else {
+                    selectedIdx.push(i);
+                    card.classList.add('selected');
+                }
+                const btn = document.getElementById('startBtn');
+                btn.style.display = selectedIdx.length > 0 ? 'block' : 'none';
+                btn.innerText = `START TRACKING (${selectedIdx.length})`;
+            };
             grid.appendChild(card);
         });
     }
 
-    function toggleSelect(idx, card) {
-        if (selectedIndices.includes(idx)) {
-            selectedIndices = selectedIndices.filter(i => i !== idx);
-            card.classList.remove('selected');
-        } else {
-            selectedIndices.push(idx);
-            card.classList.add('selected');
-        }
-        const btn = document.getElementById('startBtn');
-        btn.innerText = `START TRACKING (${selectedIndices.length})`;
-        btn.style.display = selectedIndices.length > 0 ? 'block' : 'none';
-    }
-
     function filterGrid() {
         const val = document.getElementById('mainSearch').value.toUpperCase();
-        const cards = document.querySelectorAll('.sub-card');
-        cards.forEach(c => {
-            c.style.display = c.innerText.toUpperCase().includes(val) ? 'block' : 'none';
-        });
+        document.querySelectorAll('.sub-card').forEach(c => c.style.display = c.innerText.toUpperCase().includes(val) ? 'block' : 'none');
     }
 
     function launchTracker() {
@@ -140,54 +162,50 @@
         document.getElementById('trackerView').style.display = 'block';
         document.getElementById('backBtn').style.display = 'block';
         document.getElementById('startBtn').style.display = 'none';
-
-        const tabContainer = document.getElementById('trackerTabs');
-        tabContainer.innerHTML = '';
-        selectedIndices.forEach(idx => {
-            const tab = document.createElement('div');
-            tab.className = 'tab-item';
-            tab.innerText = subjects[idx].n;
-            tab.onclick = () => switchTab(idx, tab);
-            tabContainer.appendChild(tab);
+        const bar = document.getElementById('trackerTabs');
+        bar.innerHTML = '';
+        selectedIdx.forEach(idx => {
+            const t = document.createElement('div');
+            t.className = 'tab-item';
+            t.innerText = subjects[idx].n;
+            t.onclick = () => { activeIdx = idx; document.querySelectorAll('.tab-item').forEach(x => x.classList.remove('active')); t.classList.add('active'); renderTable(); };
+            bar.appendChild(t);
         });
-        if (selectedIndices.length > 0) switchTab(selectedIndices[0], tabContainer.firstChild);
-    }
-
-    function switchTab(idx, el) {
-        activeSubIdx = idx;
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        renderTable();
+        bar.firstChild.click();
     }
 
     function renderTable() {
-        const s = subjects[activeSubIdx];
-        document.getElementById('hRow').innerHTML = `<th>YEAR</th><th>SESS</th><th>VAR</th>` + s.p.map(p => `<th>P${p}</th>`).join('');
-        const tbody = document.getElementById('tBody');
-        tbody.innerHTML = '';
-
+        const s = subjects[activeIdx];
+        document.documentElement.style.setProperty('--current', s.color);
+        document.getElementById('hRow').innerHTML = `<th>Year</th><th>Series</th><th>Var</th>` + s.p.map(p => `<th>P${p}</th>`).join('');
+        const tbody = document.getElementById('tBody'); tbody.innerHTML = '';
         for (let y = 2025; y >= 2010; y--) {
             const marks = s.m(y);
             ['Feb/Mar', 'May/Jun', 'Oct/Nov'].forEach(sess => {
-                [1, 2, 3].forEach(v => {
+               [1, 2, 3].forEach(v => {
                     const rowID = `RJ-${s.c}-${y}-${sess}-${v}`;
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td class="year-cell">${y}</td><td style="color:#666;font-size:10px">${sess}</td><td style="color:#444">V${v}</td>`;
+                    tr.innerHTML = `<td style="font-weight:800;">${y}</td><td style="color:#aaa;font-size:11px">${sess}</td><td style="color:#ccc">V${v}</td>`;
                     s.p.forEach(p => {
                         const id = rowID + '-p' + p;
                         const score = localStorage.getItem(id + '-m') || '';
-                        const checked = localStorage.getItem(id) === 'true' ? 'checked' : '';
                         tr.innerHTML += `<td>
-                            <input type="checkbox" ${checked} onchange="localStorage.setItem('${id}', this.checked)">
-                            <input type="text" class="mark-box" placeholder="0" value="${score}" onchange="localStorage.setItem('${id}-m', this.value)">
-                            <span style="font-size:9px;color:#333">/${marks[p]}</span>
-                            <button style="background:none;border:none;cursor:pointer;opacity:0.3;" onclick="openDrawer('${id}','${y} ${sess} V${v} P${p}')">📝</button>
+                            <input type="checkbox" ${localStorage.getItem(id)?'checked':''} onchange="localStorage.setItem('${id}', this.checked)">
+                            <input type="number" class="mark-box" value="${score}" oninput="valInput(this, ${marks[p]}, '${id}')">
+                            <span style="font-size:11px;color:#bbb"> / ${marks[p]}</span>
+                            <button style="border:none;background:none;cursor:pointer;font-size:16px;" onclick="openDrawer('${id}','${y} ${sess} V${v} P${p}')">📝</button>
                         </td>`;
                     });
                     tbody.appendChild(tr);
                 });
             });
         }
+    }
+
+    function valInput(input, max, id) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+        if (parseInt(input.value) > max) input.value = max;
+        localStorage.setItem(id + '-m', input.value);
     }
 
     function openDrawer(id, label) {
@@ -198,19 +216,10 @@
         document.getElementById('overlay').style.display = 'block';
     }
 
-    function closeDrawer() {
-        document.getElementById('drawer').classList.remove('open');
-        document.getElementById('overlay').style.display = 'none';
-    }
+    function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').style.display = 'none'; }
+    function saveData() { localStorage.setItem(activePaperID + '-n', document.getElementById('nArea').value); closeDrawer(); }
 
-    function saveData() {
-        localStorage.setItem(activePaperID + '-n', document.getElementById('nArea').value);
-        closeDrawer();
-    }
-
-    // Initialize
-    window.onload = initDashboard;
+    document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
-
