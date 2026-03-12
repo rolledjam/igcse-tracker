@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>IGCSE NEON SYSTEM 2026</title>
+    <link href='https://fonts.googleapis.com' rel='stylesheet'>
+    <style>
+        :root { --math: #00f2ff; --phys: #bc13fe; --chem: #39ff14; --bio: #ff0055; --bg: #050505; --current: var(--math); }
+        body {
+            font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 0;
+            border: 5px solid var(--current); box-sizing: border-box; min-height: 100vh;
+            box-shadow: inset 0 0 20px var(--current); transition: 0.5s; display: flex; flex-direction: column;
+        }
+        header { padding: 20px; text-align: center; background: #000; border-bottom: 1px solid #333; }
+        h1 { font-family: 'Orbitron', sans-serif; margin: 0; text-shadow: 0 0 10px var(--current); font-size: 1.8rem; }
+        
+        .controls { display: flex; justify-content: center; gap: 10px; padding: 20px; flex-wrap: wrap; }
+        .btn {
+            padding: 10px 20px; border: 2px solid #333; background: #111; color: #fff;
+            font-family: 'Orbitron', sans-serif; cursor: pointer; border-radius: 5px; transition: 0.3s;
+        }
+        .btn.active { border-color: var(--current); box-shadow: 0 0 10px var(--current); color: var(--current); }
+        .review-toggle { background: #ffaa00; color: #000; font-weight: bold; border: none; }
+        .review-toggle.on { background: #00ff00; box-shadow: 0 0 15px #00ff00; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; flex: 1; width: 100%; box-sizing: border-box; }
+        .card { background: #111; border-radius: 15px; padding: 15px; border: 1px solid #333; overflow-x: auto; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 5px; }
+        th { font-family: 'Orbitron', sans-serif; color: #666; font-size: 0.7rem; padding: 10px; }
+        td { background: #0a0a0a; padding: 10px; text-align: center; border-top: 1px solid #222; border-bottom: 1px solid #222; }
+        .year-cell { font-family: 'Orbitron', sans-serif; background: #1a1a1a !important; color: #fff; }
+
+        input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--current); cursor: pointer; }
+        .note-btn { background: none; border: none; font-size: 18px; cursor: pointer; opacity: 0.2; transition: 0.3s; }
+        .note-btn.has-data { opacity: 1; filter: drop-shadow(0 0 5px gold); transform: scale(1.2); }
+
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 99; backdrop-filter: blur(5px); }
+        #drawer {
+            position: fixed; right: -450px; top: 0; width: 380px; height: 100%; background: #000;
+            border-left: 4px solid var(--current); padding: 30px; transition: 0.4s; z-index: 100; overflow-y: auto; box-sizing: border-box;
+        }
+        #drawer.open { right: 0; }
+        
+        textarea { width: 100%; height: 120px; background: #111; color: #fff; border: 1px solid #333; padding: 10px; margin: 10px 0; border-radius: 5px; outline: none; resize: none; }
+        
+        .media-ui { border-top: 1px solid #333; padding-top: 15px; margin-top: 10px; }
+        .upload-btn { 
+            display: block; width: 100%; padding: 10px; background: #1a1a1a; border: 1px dashed var(--current); 
+            color: var(--current); text-align: center; border-radius: 5px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 10px;
+        }
+        .media-actions { display: none; gap: 5px; margin-top: 10px; }
+        .media-btn { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
+        .view-btn { background: var(--current); color: #000; }
+        .del-btn { background: #ff0055; color: #fff; }
+        .img-preview { width: 100%; margin-top: 10px; border-radius: 5px; display: none; border: 1px solid #444; max-height: 200px; object-fit: cover; }
+
+        .save-btn { width: 100%; padding: 15px; background: #fff; color: #000; font-family: 'Orbitron', sans-serif; font-weight: bold; border: none; cursor: pointer; margin-top: 20px; }
+        footer { text-align: center; padding: 20px; background: #000; border-top: 1px solid #333; font-family: 'Orbitron', sans-serif; color: #444; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <header><h1 id='title'>IGCSE MATH SYSTEM 2026</h1></header>
+    <div class='controls'>
+        <button class='btn Math active' onclick='setSub("Math")'>Math</button>
+        <button class='btn Physics' onclick='setSub("Physics")'>Physics</button>
+        <button class='btn Chemistry' onclick='setSub("Chemistry")'>Chemistry</button>
+        <button class='btn Biology' onclick='setSub("Biology")'>Biology</button>
+        <button class='btn review-toggle' id='revBtn' onclick='toggleReview()'>Review Mode: OFF</button>
+    </div>
+    <div class='container'><div class='card'><table><thead><tr id='hRow'></tr></thead><tbody id='tBody'></tbody></table></div></div>
+    
+    <div id='overlay' onclick='closeDrawer()'></div>
+    <div id='drawer'>
+        <h2 id='dHead' style='font-family:Orbitron; font-size: 1.2rem; margin:0;'>LOG_ERROR</h2>
+        <textarea id='nArea' placeholder='MISTAKE_DETAILS...'></textarea>
+        
+        <div class='media-ui'>
+            <label class='upload-btn' for='fIn'>+ ATTACH_IMAGE_DATA</label>
+            <input type='file' id='fIn' accept='image/*' onchange='previewImg(this)' style='display:none;'>
+            <img id='pImg' class='img-preview'>
+            <div id='mActions' class='media-actions'>
+                <button class='media-btn view-btn' onclick='openFull()'>VIEW_FULL</button>
+                <button class='media-btn del-btn' onclick='clearMedia()'>REMOVE</button>
+            </div>
+        </div>
+
+        <button class='save-btn' onclick='saveData()'>SAVE_TO_MEMORY</button>
+    </div>
+    <footer>MADE BY <span style='color:#eee'>ROLLEDJAM</span> &copy; 2026</footer>
+
+<script>
+    const sessions = ['Feb/March', 'May/June', 'Oct/Nov'];
+    const variants = ['1', '2', '3'];
+    const colors = { Math: '#00f2ff', Physics: '#bc13fe', Chemistry: '#39ff14', Biology: '#ff0055' };
+    const pCfg = { Math: [2, 4], Physics: [2, 4, 6], Chemistry: [2, 4, 6], Biology: [2, 4, 6] };
+    
+    let curSub = 'Math', curID = '', curImg = '', reviewMode = false;
+
+    function setSub(s) {
+        curSub = s;
+        document.documentElement.style.setProperty('--current', colors[s]);
+        document.querySelectorAll('.btn').forEach(b => {
+            if(b.classList.contains(s)) b.classList.add('active');
+            else if (!b.classList.contains('review-toggle')) b.classList.remove('active');
+        });
+        document.getElementById('title').innerText = `IGCSE ${s.toUpperCase()} SYSTEM 2026`;
+        render();
+    }
+
+    function toggleReview() {
+        reviewMode = !reviewMode;
+        const btn = document.getElementById('revBtn');
+        btn.innerText = `Review Mode: ${reviewMode ? 'ON' : 'OFF'}`;
+        btn.classList.toggle('on', reviewMode);
+        render();
+    }
+
+    function render() {
+        const papers = pCfg[curSub];
+        document.getElementById('hRow').innerHTML = `<th>YEAR</th><th>SESSION</th><th>VAR</th>` + papers.map(p => `<th>P${p}</th>`).join('');
+        const tbody = document.getElementById('tBody');
+        tbody.innerHTML = '';
+
+        for (let y = 2025; y >= 2010; y--) {
+            sessions.forEach(s => {
+                variants.forEach(v => {
+                    const rowID = `RJ-${curSub}-${y}-${s}-${v}`;
+                    let hasMistake = false;
+                    papers.forEach(p => { 
+                        if(localStorage.getItem(rowID+'-p'+p+'-n') || localStorage.getItem(rowID+'-p'+p+'-i')) hasMistake = true; 
+                    });
+                    if(reviewMode && !hasMistake) return;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td class='year-cell'>${y}</td><td style='color:#888; font-size:10px;'>${s}</td><td style='color:#444; font-size:10px;'>V${v}</td>`;
+                    papers.forEach(p => {
+                        const id = rowID + '-p' + p;
+                        const done = localStorage.getItem(id) === 'true';
+                        const data = localStorage.getItem(id+'-n') || localStorage.getItem(id+'-i');
+                        tr.innerHTML += `<td><div style='display:flex; align-items:center; gap:5px; justify-content:center;'>
+                            <input type='checkbox' ${done?'checked':''} onchange='localStorage.setItem("${id}", this.checked)'>
+                            <button class='note-btn ${data?"has-data":""}' id='btn-${id}' onclick='openDrawer("${id}","${y} ${s} V${v} P${p}")'>📝</button>
+                        </div></td>`;
+                    });
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+    }
+
+    function openDrawer(id, label) {
+        curID = id;
+        document.getElementById('dHead').innerText = label;
+        document.getElementById('nArea').value = localStorage.getItem(id + '-n') || '';
+        curImg = localStorage.getItem(id + '-i') || '';
+        refreshMedia();
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function previewImg(input) {
+        if(input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => { curImg = e.target.result; refreshMedia(); };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function refreshMedia() {
+        const p = document.getElementById('pImg');
+        const act = document.getElementById('mActions');
+        if(curImg) { p.src = curImg; p.style.display = 'block'; act.style.display = 'flex'; } 
+        else { p.style.display = 'none'; act.style.display = 'none'; }
+    }
+
+    function openFull() { 
+        if(curImg) { 
+            const w = window.open(""); 
+            w.document.write(`<body style="margin:0; background:#000; display:flex; align-items:center; justify-content:center;"><img src="${curImg}" style="max-width:100%; max-height:100%;"></body>`); 
+        } 
+    }
+    
+    function clearMedia() { curImg = ''; refreshMedia(); }
+
+    function saveData() {
+        const note = document.getElementById('nArea').value;
+        if(note.trim()) localStorage.setItem(curID+'-n', note); else localStorage.removeItem(curID+'-n');
+        if(curImg) localStorage.setItem(curID+'-i', curImg); else localStorage.removeItem(curID+'-i');
+        closeDrawer();
+        render();
+    }
+
+    function closeDrawer() {
+        document.getElementById('drawer').classList.remove('open');
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('fIn').value = '';
+    }
+
+    setSub('Math');
+</script>
+</body>
+</html>
